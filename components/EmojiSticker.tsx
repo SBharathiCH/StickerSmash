@@ -12,6 +12,22 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
     const scaleImage = useSharedValue(imageSize);
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
+    const angle = useSharedValue(0);
+    const startAngle = useSharedValue(0);
+
+    const rotation = Gesture.Rotation()
+    .onStart(() => {
+      startAngle.value = angle.value;
+    })
+    .onUpdate((event) => {
+      angle.value = startAngle.value + event.rotation;
+    });
+
+  const boxAnimatedStyles = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${angle.value}rad` }],
+  }));
+
+
     const doubleTap = Gesture.Tap()
   .numberOfTaps(2)
   .onStart(() => {
@@ -49,14 +65,16 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
   });
   
   return (
-    <GestureDetector gesture={drag}>
+<GestureDetector gesture={drag}>
       <Animated.View style={[containerStyle, { top: -350 }]}>
-        <GestureDetector gesture={doubleTap}>
-          <Animated.Image
-            source={stickerSource}
-            resizeMode="contain"
-            style={[imageStyle, { width: imageSize, height: imageSize }]}
-          />
+          <GestureDetector gesture={doubleTap}>
+            <GestureDetector gesture={rotation}>
+                <Animated.Image
+                  source={stickerSource}
+                  resizeMode="contain"
+                  style={[imageStyle, { width: imageSize, height: imageSize }, boxAnimatedStyles]}
+                  />
+            </GestureDetector>
         </GestureDetector>
       </Animated.View>
     </GestureDetector>
